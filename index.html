@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromptCrafter VET</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti for Celebration Effect -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        /* --- Animations --- */
+        .view-section {
+            display: none;
+        }
+        .view-section.active {
+            display: flex;
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        .step-content {
+            display: none;
+        }
+        .step-content.active {
+            display: block;
+            animation: slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .step-content.active-reverse {
+            display: block;
+            animation: slideInLeft 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes pulse-soft {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .animate-pulse-soft {
+            animation: pulse-soft 2s infinite;
+        }
+
+        /* --- Custom Styling --- */
+        .custom-radio:checked + label {
+            background-color: #eff6ff;
+            border-color: #3b82f6;
+            color: #1d4ed8;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
+        }
+        
+        .landing-bg {
+            /* 替換背景圖: 將下面條 link 改做 url('./bg-image.jpg') */
+            background-image: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.85)), url('https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        #progress-bar {
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Toast Notification */
+        #toast {
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s;
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Toast Notification (Replaces alert) -->
+    <div id="toast" class="fixed top-24 right-4 md:right-10 bg-red-600 text-white px-6 py-4 rounded-xl shadow-2xl transform translate-x-[150%] opacity-0 z-[100] flex items-center max-w-sm">
+        <i class="fa-solid fa-circle-exclamation text-2xl mr-3"></i>
+        <span id="toast-msg" class="font-medium text-sm">Error message here</span>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="bg-white/90 backdrop-blur-md shadow-sm fixed w-full z-50 top-0 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center cursor-pointer transform transition hover:scale-105" onclick="goToHome()">
+                    <i class="fa-solid fa-wand-magic-sparkles text-blue-600 text-2xl mr-2"></i>
+                    <span class="font-bold text-xl tracking-tight text-gray-900">PromptCrafter <span class="text-blue-600">VET</span></span>
+                </div>
+                <div>
+                    <button onclick="goToHome()" class="text-gray-500 hover:text-blue-600 transition-colors bg-gray-100 hover:bg-blue-50 p-2 rounded-full w-10 h-10 flex items-center justify-center">
+                        <i class="fa-solid fa-house"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow pt-16 flex flex-col relative">
+
+        <!-- ================= VIEW 1: LANDING PAGE ================= -->
+        <section id="view-landing" class="view-section active flex-grow flex-col items-center justify-center landing-bg text-white px-4 py-20 min-h-[calc(100vh-4rem)]">
+            <div class="max-w-4xl mx-auto text-center">
+                <div class="inline-block bg-blue-600/30 border border-blue-400/50 backdrop-blur-sm px-4 py-1.5 rounded-full text-blue-200 text-sm font-semibold mb-6 tracking-wide uppercase">
+                    Vocational English Edition 🇬🇧
+                </div>
+                <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight drop-shadow-lg">
+                    Craft the Perfect AI Prompt <br class="hidden md:block">in <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Seconds</span> ⚡
+                </h1>
+                <p class="text-lg md:text-2xl mb-12 text-gray-200 max-w-2xl mx-auto font-light drop-shadow-md">
+                    Stop getting generic AI answers. Guide the AI with your context, purpose, and tone to generate high-quality, professional content.
+                </p>
+                <button onclick="switchView('view-intro')" class="animate-pulse-soft bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold py-4 px-10 rounded-full text-xl shadow-[0_0_20px_rgba(37,99,235,0.5)] transform transition hover:-translate-y-1">
+                    Start Generating <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= VIEW 2: INSTRUCTIONS ================= -->
+        <section id="view-intro" class="view-section flex-grow flex-col bg-white px-4 py-12 md:py-20 min-h-[calc(100vh-4rem)]">
+            <div class="max-w-5xl mx-auto w-full">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">How It Works 🚀</h2>
+                    <p class="text-gray-500 text-xl">Just follow 6 simple steps to build your custom prompt.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+                    <!-- Cards with hover effects -->
+                    <div class="bg-gray-50 p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group">
+                        <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 text-2xl mb-6 group-hover:scale-110 transition-transform"><i class="fa-solid fa-user-tie"></i></div>
+                        <h3 class="font-bold text-xl mb-3">1. Context & Purpose</h3>
+                        <p class="text-gray-600">Tell the AI who you are and what you want to achieve.</p>
+                    </div>
+                    <div class="bg-gray-50 p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group">
+                        <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 text-2xl mb-6 group-hover:scale-110 transition-transform"><i class="fa-solid fa-list-check"></i></div>
+                        <h3 class="font-bold text-xl mb-3">2. Task Details</h3>
+                        <p class="text-gray-600">Define exactly what the AI needs to do (e.g., brainstorm).</p>
+                    </div>
+                    <div class="bg-gray-50 p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group">
+                        <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 text-2xl mb-6 group-hover:scale-110 transition-transform"><i class="fa-solid fa-bullhorn"></i></div>
+                        <h3 class="font-bold text-xl mb-3">3. Audience & Format</h3>
+                        <p class="text-gray-600">Choose between writing or speaking, and set the tone.</p>
+                    </div>
+                    <div class="bg-gray-50 p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group">
+                        <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 text-2xl mb-6 group-hover:scale-110 transition-transform"><i class="fa-solid fa-crosshairs"></i></div>
+                        <h3 class="font-bold text-xl mb-3">4. Focus Areas</h3>
+                        <p class="text-gray-600">Pinpoint specific areas like Cost, Tech, or UX.</p>
+                    </div>
+                    <div class="bg-gray-50 p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group">
+                        <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 text-2xl mb-6 group-hover:scale-110 transition-transform"><i class="fa-solid fa-language"></i></div>
+                        <h3 class="font-bold text-xl mb-3">5. Language Level</h3>
+                        <p class="text-gray-600">Set the UK English level and elaboration techniques.</p>
+                    </div>
+                    <div class="bg-blue-50 p-8 rounded-2xl border border-blue-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group relative overflow-hidden">
+                        <div class="absolute -right-4 -top-4 text-blue-200 text-9xl opacity-30"><i class="fa-solid fa-check-double"></i></div>
+                        <div class="relative z-10">
+                            <div class="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center text-white text-2xl mb-6 group-hover:scale-110 transition-transform"><i class="fa-solid fa-copy"></i></div>
+                            <h3 class="font-bold text-xl mb-3">6. Copy & Use</h3>
+                            <p class="text-gray-700">Agree to the academic integrity rules and get your prompt!</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <button onclick="startGenerator()" class="bg-gray-900 hover:bg-black text-white font-bold py-4 px-12 rounded-full text-xl shadow-lg transform transition hover:scale-105">
+                        Let's Go! <i class="fa-solid fa-rocket ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= VIEW 3: THE GENERATOR ================= -->
+        <section id="view-generator" class="view-section flex-grow flex-col px-4 py-8 md:py-12 bg-gray-50">
+            <div class="max-w-4xl w-full mx-auto bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 flex flex-col">
+                
+                <!-- Progress Bar Area -->
+                <div class="bg-gray-50 border-b border-gray-100">
+                    <div class="bg-gray-200 h-2 w-full relative">
+                        <div id="progress-bar" class="bg-blue-600 h-2 absolute top-0 left-0 w-1/6 rounded-r-full"></div>
+                    </div>
+                    <div class="px-8 py-4 flex justify-between items-center">
+                        <div class="flex items-center">
+                            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide mr-3" id="step-indicator">Step 1 of 6</span>
+                            <span id="step-title-indicator" class="text-lg text-gray-700 font-bold">Context</span>
+                        </div>
+                        <div class="text-gray-400 text-sm hidden sm:block">Vocational English Edition</div>
+                    </div>
+                </div>
+
+                <!-- Form Container -->
+                <div class="p-6 md:p-10 flex-grow relative overflow-hidden min-h-[450px]">
+                    
+                    <!-- STEP 1: Context & Purpose -->
+                    <div id="step-1" class="step-content active">
+                        <h2 class="text-3xl font-bold mb-8 text-gray-800">🎭 Role, Context & Purpose</h2>
+                        
+                        <div class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Your Role <span class="text-red-500">*</span></label>
+                                    <input type="text" id="role" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-0 focus:border-blue-500 outline-none transition bg-gray-50 hover:bg-white focus:bg-white" placeholder="E.g., Project Assistant">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Your Organisation <span class="text-red-500">*</span></label>
+                                    <input type="text" id="org" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-0 focus:border-blue-500 outline-none transition bg-gray-50 hover:bg-white focus:bg-white" placeholder="E.g., ABC Company">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">The Situation <span class="text-red-500">*</span></label>
+                                <textarea id="situation" rows="2" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-0 focus:border-blue-500 outline-none transition bg-gray-50 hover:bg-white focus:bg-white resize-none" placeholder="E.g., We need to upgrade the classroom displays."></textarea>
+                            </div>
+                            
+                            <!-- Dynamic Purpose -->
+                            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border border-blue-100 shadow-inner">
+                                <label class="block text-base font-bold text-blue-900 mb-3">🎯 Core Purpose (What is your main goal?) <span class="text-red-500">*</span></label>
+                                <select id="purpose" onchange="handlePurposeChange()" class="w-full border-2 border-white rounded-xl px-4 py-3 focus:ring-0 focus:border-blue-500 outline-none bg-white shadow-sm cursor-pointer">
+                                    <option value="" disabled selected>-- Select a purpose --</option>
+                                    <option value="justify">⚖️ Justify a preference / choice</option>
+                                    <option value="suggest">💡 Make a suggestion</option>
+                                    <option value="solve">🛠️ Solve a problem</option>
+                                    <option value="summarise">📄 Summarise an article</option>
+                                </select>
+
+                                <!-- Dynamic Follow-ups -->
+                                <div id="purpose-followup" class="mt-5 hidden animate-fadeInUp">
+                                    <label id="purpose-label" class="block text-sm font-semibold text-blue-900 mb-2"></label>
+                                    <input type="text" id="purpose-detail" class="w-full border-2 border-white rounded-xl px-4 py-3 focus:ring-0 focus:border-blue-500 outline-none transition bg-white shadow-sm">
+                                    <p id="purpose-hint" class="text-xs text-blue-700 mt-2 hidden font-medium"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: Task Details -->
+                    <div id="step-2" class="step-content">
+                        <h2 class="text-3xl font-bold mb-8 text-gray-800">📋 Task Details</h2>
+                        <div class="space-y-8">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-3">What do you want AI to do? <span class="text-red-500">*</span></label>
+                                <select id="task-type" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-0 focus:border-blue-500 outline-none bg-gray-50 cursor-pointer hover:bg-white transition">
+                                    <option value="Brainstorm pros and cons">Brainstorm pros & cons</option>
+                                    <option value="Brainstorm ideas and solutions">Brainstorm ideas</option>
+                                    <option value="Conduct basic research and list key takeaways">Research & summarise</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-4">How many points do you need?</label>
+                                <div class="flex flex-wrap gap-4">
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="points" value="3" class="hidden custom-radio" checked>
+                                        <div class="border-2 border-gray-200 rounded-xl px-6 py-3 font-bold text-gray-600 hover:bg-gray-50 transition bg-white">3 Points</div>
+                                    </label>
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="points" value="4" class="hidden custom-radio">
+                                        <div class="border-2 border-gray-200 rounded-xl px-6 py-3 font-bold text-gray-600 hover:bg-gray-50 transition bg-white">4 Points</div>
+                                    </label>
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="points" value="5" class="hidden custom-radio">
+                                        <div class="border-2 border-gray-200 rounded-xl px-6 py-3 font-bold text-gray-600 hover:bg-gray-50 transition bg-white">5 Points</div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="bg-amber-50 p-5 rounded-2xl border border-amber-100">
+                                <label class="flex items-center cursor-pointer group">
+                                    <div class="relative flex items-center justify-center w-6 h-6 mr-3">
+                                        <input type="checkbox" id="fact-check" class="peer w-6 h-6 opacity-0 absolute cursor-pointer z-10">
+                                        <div class="w-6 h-6 border-2 border-amber-400 rounded bg-white peer-checked:bg-amber-500 peer-checked:border-amber-500 transition-colors flex items-center justify-center">
+                                            <i class="fa-solid fa-check text-white text-xs opacity-0 peer-checked:opacity-100"></i>
+                                        </div>
+                                    </div>
+                                    <span class="text-sm font-bold text-amber-900 group-hover:text-amber-700 transition">🔍 Require Fact-checking (Ask AI to provide sources/links)</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 3: Scenario & Audience -->
+                    <div id="step-3" class="step-content">
+                        <h2 class="text-3xl font-bold mb-8 text-gray-800">🗣️ Scenario & Audience</h2>
+                        <div class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Target Audience <span class="text-red-500">*</span></label>
+                                    <input type="text" id="audience" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-0 focus:border-blue-500 outline-none bg-gray-50 hover:bg-white focus:bg-white transition" placeholder="E.g., The Principal, Supplier">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Communication Type</label>
+                                    <select id="comm-type" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-0 focus:border-blue-500 outline-none bg-gray-50 cursor-pointer hover:bg-white transition">
+                                        <option value="Internal">Internal (Within organisation)</option>
+                                        <option value="External">External (Outside organisation)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Dynamic Format -->
+                            <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-100 mt-6">
+                                <label class="block text-base font-bold text-indigo-900 mb-4">Output Format <span class="text-red-500">*</span></label>
+                                <div class="flex flex-col sm:flex-row gap-4 mb-6">
+                                    <label class="flex-1 cursor-pointer">
+                                        <input type="radio" name="format-main" value="writing" class="hidden custom-radio" onchange="handleFormatChange()">
+                                        <div class="border-2 border-white rounded-xl p-4 text-center hover:bg-white transition bg-white/50 shadow-sm font-bold text-indigo-800">
+                                            <i class="fa-solid fa-pen-nib text-2xl block mb-2"></i> For Writing
+                                        </div>
+                                    </label>
+                                    <label class="flex-1 cursor-pointer">
+                                        <input type="radio" name="format-main" value="speaking" class="hidden custom-radio" onchange="handleFormatChange()">
+                                        <div class="border-2 border-white rounded-xl p-4 text-center hover:bg-white transition bg-white/50 shadow-sm font-bold text-indigo-800">
+                                            <i class="fa-solid fa-microphone text-2xl block mb-2"></i> For Speaking
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- Writing Options -->
+                                <div id="writing-options" class="hidden space-y-4 animate-fadeInUp">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-semibold text-indigo-900 mb-2">Document Type</label>
+                                            <select id="doc-type" class="w-full border-2 border-white rounded-xl px-4 py-3 outline-none bg-white shadow-sm cursor-pointer">
+                                                <option value="Email">Email</option>
+                                                <option value="Report">Report</option>
+                                                <option value="Proposal">Proposal</option>
+                                                <option value="Memo">Memo</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-semibold text-indigo-900 mb-2">Tone</label>
+                                            <select id="writing-tone" class="w-full border-2 border-white rounded-xl px-4 py-3 outline-none bg-white shadow-sm cursor-pointer">
+                                                <option value="Formal">Formal</option>
+                                                <option value="Semi-formal">Semi-formal</option>
+                                                <option value="Informal">Informal</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Speaking Options -->
+                                <div id="speaking-options" class="hidden space-y-4 animate-fadeInUp">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-semibold text-indigo-900 mb-2">Event Type</label>
+                                            <select id="event-type" class="w-full border-2 border-white rounded-xl px-4 py-3 outline-none bg-white shadow-sm cursor-pointer">
+                                                <option value="Presentation">Presentation</option>
+                                                <option value="Meeting Discussion">Meeting Discussion</option>
+                                                <option value="Speech">Speech</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-semibold text-indigo-900 mb-2">Tone</label>
+                                            <select id="speaking-tone" class="w-full border-2 border-white rounded-xl px-4 py-3 outline-none bg-white shadow-sm cursor-pointer">
+                                                <option value="Professional">Professional</option>
+                                                <option value="Conversational & Engaging">Conversational & Engaging</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 4: Focus Areas -->
+                    <div id="step-4" class="step-content">
+                        <h2 class="text-3xl font-bold mb-2 text-gray-800">🎯 Focus Areas</h2>
+                        <p class="text-gray-500 text-base mb-8">Select <span class="font-bold text-blue-600">1 to 3</span> areas you want the AI to focus on.</p>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="focus-checkboxes">
+                            <!-- Custom Checkboxes -->
+                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-xl hover:bg-blue-50 hover:border-blue-200 cursor-pointer transition group">
+                                <input type="checkbox" value="Cost & Budget" class="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 focus-check">
+                                <span class="ml-3 font-medium text-gray-700 group-hover:text-blue-800">💰 Cost & Budget</span>
+                            </label>
+                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-xl hover:bg-blue-50 hover:border-blue-200 cursor-pointer transition group">
+                                <input type="checkbox" value="Time & Schedule" class="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 focus-check">
+                                <span class="ml-3 font-medium text-gray-700 group-hover:text-blue-800">⏱️ Time & Schedule</span>
+                            </label>
+                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-xl hover:bg-blue-50 hover:border-blue-200 cursor-pointer transition group">
+                                <input type="checkbox" value="Technology & Specs" class="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 focus-check">
+                                <span class="ml-3 font-medium text-gray-700 group-hover:text-blue-800">💻 Technology & Specs</span>
+                            </label>
+                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-xl hover:bg-blue-50 hover:border-blue-200 cursor-pointer transition group">
+                                <input type="checkbox" value="User Experience" class="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 focus-check">
+                                <span class="ml-3 font-medium text-gray-700 group-hover:text-blue-800">😊 User Experience</span>
+                            </label>
+                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-xl hover:bg-blue-50 hover:border-blue-200 cursor-pointer transition group">
+                                <input type="checkbox" value="Maintenance & Support" class="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 focus-check">
+                                <span class="ml-3 font-medium text-gray-700 group-hover:text-blue-800">🔧 Maintenance & Support</span>
+                            </label>
+                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-xl hover:bg-blue-50 hover:border-blue-200 cursor-pointer transition group">
+                                <input type="checkbox" value="Environmental Impact" class="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 focus-check">
+                                <span class="ml-3 font-medium text-gray-700 group-hover:text-blue-800">🌱 Environmental Impact</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- STEP 5: Language & Elaboration -->
+                    <div id="step-5" class="step-content">
+                        <h2 class="text-3xl font-bold mb-8 text-gray-800">🔤 Language & Elaboration</h2>
+                        <div class="space-y-8">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-3">Target Language Level (UK English)</label>
+                                <select id="lang-level" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-0 focus:border-blue-500 outline-none bg-gray-50 cursor-pointer hover:bg-white transition">
+                                    <option value="HKQF Level 3 (Diploma level)">HKQF Level 3 (Diploma level)</option>
+                                    <option value="HKQF Level 4 (Higher Diploma level)">HKQF Level 4 (Higher Diploma level)</option>
+                                    <option value="Senior Secondary Student">Senior Secondary Student</option>
+                                    <option value="Simple and Plain English">Simple and Plain English</option>
+                                </select>
+                            </div>
+                            
+                            <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                                <label class="block text-sm font-semibold text-gray-700 mb-4">How should AI elaborate the points? (Select all that apply)</label>
+                                <div class="space-y-3">
+                                    <label class="flex items-center p-2 hover:bg-gray-100 rounded-lg cursor-pointer transition">
+                                        <input type="checkbox" value="Give clear explanations" class="w-5 h-5 text-blue-600 rounded border-gray-300" checked>
+                                        <span class="ml-3 font-medium text-gray-700">Give clear explanations</span>
+                                    </label>
+                                    <label class="flex items-center p-2 hover:bg-gray-100 rounded-lg cursor-pointer transition">
+                                        <input type="checkbox" value="Provide real-life examples" class="w-5 h-5 text-blue-600 rounded border-gray-300">
+                                        <span class="ml-3 font-medium text-gray-700">Provide real-life examples</span>
+                                    </label>
+                                    <label class="flex items-center p-2 hover:bg-gray-100 rounded-lg cursor-pointer transition">
+                                        <input type="checkbox" value="Talk about possible impacts or results" class="w-5 h-5 text-blue-600 rounded border-gray-300">
+                                        <span class="ml-3 font-medium text-gray-700">Talk about possible impacts/results</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 6: Final Output & Warning -->
+                    <div id="step-6" class="step-content">
+                        
+                        <!-- Plagiarism Warning Box -->
+                        <div class="bg-red-50 border-l-4 border-red-500 p-5 mb-8 rounded-r-xl shadow-sm">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0">
+                                    <i class="fa-solid fa-triangle-exclamation text-red-500 text-2xl mt-1 animate-pulse"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <h3 class="text-xl font-bold text-red-800 mb-2">Academic Integrity Reminder</h3>
+                                    <div class="text-sm text-red-700 space-y-2 font-medium">
+                                        <p>• AI is your <strong>brainstorming partner</strong>, not your writer!</p>
+                                        <p>• You MUST <strong>paraphrase and rewrite</strong> the AI-generated ideas in your own words.</p>
+                                        <p>• Direct copy-and-pasting may result in <strong>plagiarism</strong>.</p>
+                                    </div>
+                                    <div class="mt-5 bg-white p-3 rounded-lg border border-red-200 inline-block">
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="checkbox" id="agree-check" onchange="toggleCopyButton()" class="w-6 h-6 text-red-600 rounded focus:ring-red-500 border-red-300 cursor-pointer">
+                                            <span class="ml-3 text-sm font-bold text-red-900">I understand and agree. <br class="sm:hidden"><span class="text-red-500 font-normal">(Check to unlock Copy button)</span></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h2 class="text-2xl font-bold mb-4 flex items-center text-gray-800">
+                            ✨ Your Custom Prompt
+                        </h2>
+                        <div class="relative group">
+                            <textarea id="final-prompt" readonly class="w-full h-64 p-5 bg-gray-900 text-green-400 border-2 border-gray-800 rounded-2xl text-sm font-mono resize-none focus:outline-none shadow-inner leading-relaxed"></textarea>
+                            <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span class="bg-gray-700 text-white text-xs px-2 py-1 rounded">Read-only</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 flex flex-col sm:flex-row gap-6 justify-between items-center bg-blue-50 p-4 rounded-xl border border-blue-100">
+                            <div class="text-sm text-blue-800 font-medium">
+                                <strong>Next Steps:</strong> Paste this into <a href="https://poe.com" target="_blank" class="text-blue-600 hover:text-blue-800 underline font-bold">Poe</a>, <a href="https://chatgpt.com" target="_blank" class="text-blue-600 hover:text-blue-800 underline font-bold">ChatGPT</a>, or <a href="https://gemini.google.com" target="_blank" class="text-blue-600 hover:text-blue-800 underline font-bold">Gemini</a>.
+                            </div>
+                            <button id="copy-btn" onclick="copyPrompt()" disabled class="bg-gray-300 text-gray-500 cursor-not-allowed font-bold py-3 px-8 rounded-xl shadow transition-all duration-300 flex items-center whitespace-nowrap">
+                                <i class="fa-regular fa-copy mr-2 text-xl"></i> Copy Prompt
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Footer Navigation Buttons -->
+                <div class="bg-white px-6 md:px-10 py-6 border-t border-gray-100 flex justify-between items-center rounded-b-3xl" id="form-nav-buttons">
+                    <button id="btn-prev" onclick="prevStep()" class="hidden px-6 py-3 border-2 border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all font-bold flex items-center">
+                        <i class="fa-solid fa-arrow-left mr-2"></i> Back
+                    </button>
+                    <div class="flex-grow"></div>
+                    <button id="btn-next" onclick="nextStep()" class="px-8 py-3 bg-gray-900 text-white rounded-xl hover:bg-black transition-all font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center">
+                        Next <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </button>
+                    <button id="btn-generate" onclick="generatePrompt()" class="hidden px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center">
+                        Generate Prompt <i class="fa-solid fa-wand-magic-sparkles ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- Toast Notification System (Replaces alert) ---
+        function showError(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = message;
+            
+            // Show toast
+            toast.classList.remove('translate-x-[150%]', 'opacity-0');
+            toast.classList.add('translate-x-0', 'opacity-100');
+            
+            // Hide after 3.5 seconds
+            setTimeout(() => {
+                toast.classList.remove('translate-x-0', 'opacity-100');
+                toast.classList.add('translate-x-[150%]', 'opacity-0');
+            }, 3500);
+        }
+
+        // --- View Navigation ---
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.getElementById(viewId).classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function goToHome() {
+            switchView('view-landing');
+            currentStep = 1;
+            updateUI(false);
+        }
+
+        function startGenerator() {
+            switchView('view-generator');
+            currentStep = 1;
+            updateUI(false);
+        }
+
+        // --- Multi-step Form Logic ---
+        let currentStep = 1;
+        const totalSteps = 6;
+        const stepTitles = ["Context", "Task", "Audience", "Focus", "Language", "Result"];
+
+        function updateUI(isForward = true) {
+            // Animation handling
+            document.querySelectorAll('.step-content').forEach(el => {
+                el.classList.remove('active', 'active-reverse');
+            });
+            
+            const currentStepEl = document.getElementById(`step-${currentStep}`);
+            if (isForward) {
+                currentStepEl.classList.add('active');
+            } else {
+                currentStepEl.classList.add('active-reverse');
+            }
+            
+            // Update Progress Bar & Text
+            const progressPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPercentage}%`;
+            document.getElementById('step-indicator').innerText = `Step ${currentStep} of ${totalSteps}`;
+            document.getElementById('step-title-indicator').innerText = stepTitles[currentStep - 1];
+
+            // Update Buttons
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNext = document.getElementById('btn-next');
+            const btnGen = document.getElementById('btn-generate');
+            const navButtons = document.getElementById('form-nav-buttons');
+
+            if (currentStep === 1) {
+                btnPrev.classList.add('hidden');
+            } else {
+                btnPrev.classList.remove('hidden');
+            }
+
+            if (currentStep === totalSteps) {
+                navButtons.classList.add('hidden'); // Hide bottom nav on last step
+            } else if (currentStep === totalSteps - 1) {
+                btnNext.classList.add('hidden');
+                btnGen.classList.remove('hidden');
+                navButtons.classList.remove('hidden');
+            } else {
+                btnNext.classList.remove('hidden');
+                btnGen.classList.add('hidden');
+                navButtons.classList.remove('hidden');
+            }
+            
+            // Scroll to top of the card smoothly
+            if(window.scrollY > 200) {
+                document.getElementById('view-generator').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function validateStep() {
+            if (currentStep === 1) {
+                const role = document.getElementById('role').value.trim();
+                const org = document.getElementById('org').value.trim();
+                const sit = document.getElementById('situation').value.trim();
+                const purp = document.getElementById('purpose').value;
+                const purpDetail = document.getElementById('purpose-detail').value.trim();
+                
+                if (!role || !org || !sit || !purp) {
+                    showError("Please fill in all required fields (marked with *).");
+                    return false;
+                }
+                if (purp && !purpDetail) {
+                    showError("Please provide details for your selected purpose.");
+                    return false;
+                }
+            }
+            if (currentStep === 3) {
+                const aud = document.getElementById('audience').value.trim();
+                const format = document.querySelector('input[name="format-main"]:checked');
+                if (!aud || !format) {
+                    showError("Please specify the Target Audience and select an Output Format.");
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function nextStep() {
+            if (validateStep() && currentStep < totalSteps) {
+                currentStep++;
+                updateUI(true);
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateUI(false);
+            }
+        }
+
+        // --- Dynamic Form Logic ---
+        function handlePurposeChange() {
+            const purpose = document.getElementById('purpose').value;
+            const followupDiv = document.getElementById('purpose-followup');
+            const label = document.getElementById('purpose-label');
+            const hint = document.getElementById('purpose-hint');
+            const input = document.getElementById('purpose-detail');
+            
+            followupDiv.classList.remove('hidden');
+            input.value = ''; // clear previous
+            hint.classList.add('hidden');
+
+            if (purpose === 'justify') {
+                label.innerText = "What are the options? *";
+                input.placeholder = "E.g., Smartboards vs Traditional Projectors";
+            } else if (purpose === 'suggest') {
+                label.innerText = "Suggest about what? *";
+                input.placeholder = "E.g., Improving classroom equipment";
+            } else if (purpose === 'solve') {
+                label.innerText = "What is the exact problem? *";
+                input.placeholder = "E.g., Budget is too tight this year";
+            } else if (purpose === 'summarise') {
+                label.innerText = "Paste the Article Link or Title *";
+                input.placeholder = "https://...";
+                hint.innerText = "(Tip: If the AI cannot read the link, you may need to copy and paste the article text directly into the AI later.)";
+                hint.classList.remove('hidden');
+            }
+        }
+
+        function handleFormatChange() {
+            const format = document.querySelector('input[name="format-main"]:checked').value;
+            const writeOpts = document.getElementById('writing-options');
+            const speakOpts = document.getElementById('speaking-options');
+            
+            if (format === 'writing') {
+                writeOpts.classList.remove('hidden');
+                speakOpts.classList.add('hidden');
+            } else {
+                speakOpts.classList.remove('hidden');
+                writeOpts.classList.add('hidden');
+            }
+        }
+
+        // Limit Checkboxes for Focus Areas (Max 3)
+        const focusCheckboxes = document.querySelectorAll('.focus-check');
+        focusCheckboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                const checkedCount = document.querySelectorAll('.focus-check:checked').length;
+                if (checkedCount > 3) {
+                    this.checked = false;
+                    showError("You can only select up to 3 focus areas.");
+                }
+            });
+        });
+
+        // --- Plagiarism Agreement & Copy Button ---
+        function toggleCopyButton() {
+            const isAgreed = document.getElementById('agree-check').checked;
+            const btn = document.getElementById('copy-btn');
+            if (isAgreed) {
+                btn.disabled = false;
+                btn.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+                btn.classList.add('bg-blue-600', 'text-white', 'hover:bg-blue-700', 'hover:-translate-y-1', 'shadow-lg');
+            } else {
+                btn.disabled = true;
+                btn.classList.add('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+                btn.classList.remove('bg-blue-600', 'text-white', 'hover:bg-blue-700', 'hover:-translate-y-1', 'shadow-lg');
+            }
+        }
+
+        function copyPrompt() {
+            const promptText = document.getElementById('final-prompt').value;
+            navigator.clipboard.writeText(promptText).then(() => {
+                const btn = document.getElementById('copy-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-check mr-2 text-xl"></i> Copied Successfully!';
+                btn.classList.replace('bg-blue-600', 'bg-green-500');
+                btn.classList.replace('hover:bg-blue-700', 'hover:bg-green-600');
+                
+                // Fire mini confetti on copy
+                confetti({
+                    particleCount: 50,
+                    spread: 60,
+                    origin: { y: 0.8 },
+                    colors: ['#22c55e', '#ffffff']
+                });
+
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.replace('bg-green-500', 'bg-blue-600');
+                    btn.classList.replace('hover:bg-green-600', 'hover:bg-blue-700');
+                }, 2500);
+            });
+        }
+
+        // --- Generate Prompt Logic ---
+        function generatePrompt() {
+            if (!validateStep()) return;
+
+            // Gather Data
+            const role = document.getElementById('role').value.trim();
+            const org = document.getElementById('org').value.trim();
+            const sit = document.getElementById('situation').value.trim();
+            
+            const purposeType = document.getElementById('purpose').value;
+            const purposeDetail = document.getElementById('purpose-detail').value.trim();
+            let purposeStr = "";
+            if (purposeType === 'justify') purposeStr = `justify a preference between the following options: ${purposeDetail}`;
+            if (purposeType === 'suggest') purposeStr = `make a suggestion about: ${purposeDetail}`;
+            if (purposeType === 'solve') purposeStr = `solve the following problem: ${purposeDetail}`;
+            if (purposeType === 'summarise') purposeStr = `summarise the article provided here: ${purposeDetail}. (Note: If you cannot access the link, please ask me to paste the text).`;
+
+            const task = document.getElementById('task-type').value;
+            const points = document.querySelector('input[name="points"]:checked').value;
+            const factCheck = document.getElementById('fact-check').checked ? " Please provide sources or links for fact-checking your claims." : "";
+
+            const audience = document.getElementById('audience').value.trim();
+            const commType = document.getElementById('comm-type').value;
+            const formatMain = document.querySelector('input[name="format-main"]:checked').value;
+            
+            let formatStr = "";
+            if (formatMain === 'writing') {
+                const docType = document.getElementById('doc-type').value;
+                const tone = document.getElementById('writing-tone').value;
+                formatStr = `Please write this as a/an ${docType} intended for ${audience} (${commType} communication). Use a ${tone} tone.`;
+            } else {
+                const eventType = document.getElementById('event-type').value;
+                const tone = document.getElementById('speaking-tone').value;
+                formatStr = `Please prepare this for Speaking (${eventType}) intended for ${audience} (${commType} communication). Use a ${tone} tone.`;
+            }
+
+            const focusChecked = Array.from(document.querySelectorAll('.focus-check:checked')).map(cb => cb.value);
+            const focusStr = focusChecked.length > 0 ? `\n\nFocus Areas: Please focus specifically on ${focusChecked.join(', ')}.` : "";
+
+            const langLevel = document.getElementById('lang-level').value;
+            const elabChecked = Array.from(document.querySelectorAll('#step-5 input[type="checkbox"]:checked')).map(cb => cb.value);
+            const elabStr = elabChecked.length > 0 ? ` For each point, please ${elabChecked.join(' and ')}.` : "";
+
+            // Construct Prompt (Ensuring UK English instructions)
+            const finalPrompt = `Act as a ${role} at ${org}. The current situation is: ${sit}
+
+My core purpose is to ${purposeStr}.
+
+Your task: Please ${task}. I need exactly ${points} key points.${factCheck}${focusStr}
+
+Output Format & Tone: ${formatStr}
+
+Language & Elaboration: Please use UK English spelling and grammar. The language level should be suitable for ${langLevel}.${elabStr}
+
+Important Constraints: STRICTLY DO NOT use semicolons (;). Break each point into 2 to 3 natural-sounding sentences.${formatMain === 'speaking' ? ' Ensure the language is easy to speak aloud.' : ''}`;
+
+            document.getElementById('final-prompt').value = finalPrompt;
+            
+            // Reset Copy Button
+            document.getElementById('agree-check').checked = false;
+            toggleCopyButton();
+
+            // Move to Step 6
+            currentStep = 6;
+            updateUI(true);
+
+            // Trigger Confetti Celebration! 🎉
+            setTimeout(() => {
+                var duration = 3 * 1000;
+                var animationEnd = Date.now() + duration;
+                var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+                function randomInRange(min, max) {
+                  return Math.random() * (max - min) + min;
+                }
+
+                var interval = setInterval(function() {
+                  var timeLeft = animationEnd - Date.now();
+
+                  if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                  }
+
+                  var particleCount = 50 * (timeLeft / duration);
+                  confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                  confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+                }, 250);
+            }, 300);
+        }
+    </script>
+</body>
+</html>
